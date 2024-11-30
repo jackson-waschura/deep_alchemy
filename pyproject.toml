@@ -1,0 +1,33 @@
+
+[build-system]
+requires = ["setuptools>=46", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "deep_alchemy"
+dynamic = ["version"]
+description = "A workspace to experiment and learn about deep reinforcement learning"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+keywords = ["deep reinforcement learning"]
+authors = [
+    {name = "Jackson Waschura", email = "jackson.waschura@gmail.com"},
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+]
+dependencies = [
+    "torch>=2.5.1",
+    "numpy>=2.1.3",
+    "jax>=0.4.35",
+    "jaxlib>=0.4.35",
+    "matplotlib>=3.9.2",
+]
+
+[tool.setuptools.packages.find]
+include = ["deep_alchemy"]

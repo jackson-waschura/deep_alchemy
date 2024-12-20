@@ -295,3 +295,118 @@ The **off-policy correction** is the importance sampling ratio multiplied by the
 $$
 \hat{q}(s_t, a_t) \leftarrow \hat{q}(s_t, a_t) + \alpha \rho_{t} \left[ G_t - \hat{q}(s_t, a_t) \right]
 $$
+
+## Episode 4 (Temporal Difference Learning and Q-Learning)
+
+**Link:** [Reinforcement Learning By the Book (Ep. 4)](https://www.youtube.com/watch?v=AJiG3ykOxmY&list=PLzvYlJMoZ02Dxtwe-MmH4nOB5jYlMGBjr)
+
+### n-Step Temporal Difference Learning
+
+Temporal Difference Learning is a model-free method for learning the value function (or action-value function) of a policy. It is similar to Monte Carlo methods but instead of waiting for the end of the episode to compute the return, it updates the value function estimate based on the difference between the current estimate and the observed reward plus the discounted value of the final observed state after n steps.
+
+$$
+G_t^{(n)} = R_{t+1} + \gamma R_{t+2} + \cdots + \gamma^{n-1} R_{t+n} + \gamma^n \hat{q}(S_{t+n}, A_{t+n})
+$$
+
+In the batch case, where we run the evaluation and update steps multiple times on a fixed batch of episodes until convergence, we find that TD Learning and MC Learning converge to different value functions. TD Learning maximizes the likelihood of the MRP while MC Learning minimizes the mean squared error between the true value function and the estimated value function.
+
+#### Example: On Policy TD Control (n-step Sarsa)
+
+Since we are model free, we can't use the state value function. Instead, we use the action-value function.
+
+$$
+Q(S_t, A_t) \text{ not } V(S_t)
+$$
+
+We redefine the return as the sum of the rewards plus the discounted value of the next state after n steps.
+
+$$
+G_t^{(n)} = R_{t+1} + \gamma R_{t+2} + \cdots + \gamma^{n-1} R_{t+n} + \gamma^n \hat{q}(S_{t+n}, A_{t+n})
+$$
+
+And the update rule is:
+
+$$
+Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \alpha \left[ G_t^{(n)} - Q(S_t, A_t) \right]
+$$
+
+## Episode 5 (Function Approximation)
+
+**Link:** [Reinforcement Learning By the Book (Ep. 5)](https://www.youtube.com/watch?v=Vky0WVh_FSk&list=PLzvYlJMoZ02Dxtwe-MmH4nOB5jYlMGBjr&index=5&pp=iAQB)
+
+Function approximation is a technique used to approximate the value function or action-value function. It is used when the state space is too large to store in memory or when the state space is continuous. It is effectively performing supervised learning on the value function or action-value function.
+
+TODO: go back over this episode.
+
+## Episode 6 (Policy Gradient Methods)
+
+**Link:** [Reinforcement Learning By the Book (Ep. 6)](https://www.youtube.com/watch?v=e20EY4tFC_Q&list=PLzvYlJMoZ02Dxtwe-MmH4nOB5jYlMGBjr&index=6)
+
+Policy Gradient Methods are a class of algorithms that learn the policy directly. They do not learn the value function or action-value function. Instead, they learn the parameters of the policy function.
+
+### REINFORCE
+
+REINFORCE is a Monte Carlo Policy Gradient method. It uses the policy gradient theorem to update the policy parameters.
+
+The general form of the algorithm is:
+
+1. Generate an episode following the current policy.
+2. Compute the return for each timestep.
+3. Update the policy parameters using the policy gradient.
+
+The update rule is:
+
+$$
+\theta \leftarrow \theta + \alpha \sum_{t=1}^T \nabla_\theta \log \pi_\theta(a_t | s_t) G_t
+$$
+
+Where $\theta$ is the policy parameters, $\alpha$ is the learning rate, and $G_t$ is the return for timestep $t$.
+
+The gradient of the log-probability of the action is necessary instead of the gradient of the probability of the action because it scales the gradient by the likelihood of the action. That way, the gradient is larger for actions that are best, even if they are not the most likely.
+
+### REINFORCE with a Baseline
+
+To handle the variance problem, we can use a baseline to reduce the variance of the gradient estimate. A baseline is a function that is independent of the action. It is typically the state value function, but it can be any function that is independent of the action.
+
+$$
+\nabla_\theta \log \pi_\theta(a|s) = \nabla_\theta \log \pi_\theta(a|s) (R - b(s))
+$$
+
+Where $b(s)$ is the baseline. This makes actions that are better than expected to be more likely, and actions that are worse than expected to be less likely.
+
+### The Policy Gradient Theorem
+
+The policy gradient theorem is a fundamental result in reinforcement learning that relates the gradient of the expected return to the gradient of the policy. It provides a way to compute the gradient of the expected return with respect to the policy parameters, which is essential for optimizing the policy using gradient ascent.
+
+The policy gradient theorem states that the gradient of the expected return $J(\theta)$ with respect to the policy parameters $\theta$ is given by:
+
+$$
+\nabla_\theta J(\theta) = \mathbb{E}_{s \sim \mu} \left[ \sum_{a \in \mathcal{A}(s)} \nabla_\theta \pi_\theta(a|s) q_\pi(s, a) \right]
+$$
+
+$$
+\nabla_\theta J(\theta) \propto \sum_{s \in \mathcal{S}} \mu(s) \sum_{a \in \mathcal{A}(s)} \nabla_\theta \pi_\theta(a|s) q_\pi(s, a)
+$$
+
+Which explained in plain english is:
+
+> The gradient of the expected return with respect to the policy parameters is proportional to the sum of the expected value of the sum of the gradients of the log-probability of the actions taken along the trajectory, weighted by the action-value function.
+
+## Lil'Log Policy Gradient Blog Post
+
+[Lil'Log Policy Gradient Blog Post](https://lilianweng.github.io/posts/2018-04-08-policy-gradient/)
+
+### PPO
+
+Proximal Policy Optimization (PPO) is a policy gradient method that uses a trust region to constrain the policy updates in an off-policy manner. It is a popular method for training deep reinforcement learning agents.
+
+PPO uses a clipped objective function to ensure that the policy updates are not too large. More precisely, it clips the ratio of the new policy to the old policy to be between $1 - \epsilon$ and $1 + \epsilon$. So that even if the new policy and old policy are vastly different, the ratio will not be too far from 1.
+
+If we define the ratio as $r_t(\theta) = \frac{\pi_\theta(a_t | s_t)}{\pi_{\theta_{old}}(a_t | s_t)}$, then the objective function is:
+
+$$
+L^{CLIP}(\theta) = \min \left( r_t(\theta) A^{\pi_{\theta_{old}}}(s_t, a_t), \text{clip} \left( r_t(\theta), 1 - \epsilon, 1 + \epsilon \right) A^{\pi_{\theta_{old}}}(s_t, a_t) \right)
+$$
+
+Where $\epsilon$ is a hyperparameter that controls the size of the trust region and $A^{\pi_{\theta_{old}}}(s_t, a_t)$ is the advantage function under the old policy. The advantage function is the difference between the return and the value function (or between the action-value function and the state-value function).
+
